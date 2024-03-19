@@ -1,53 +1,29 @@
-const http = require('http');
-const {readFileSync} = require('fs');
+const express = require('express')
+const app = express()
 
-// get all files
-// we only want to read the file one time when we start up the server,
-// not every time we load a page, so we put it out here
-const homePage = readFileSync('./navbar-app/index.html');
-const homeStyles = readFileSync('./navbar-app/styles.css');
-const homeImage = readFileSync('./navbar-app/logo.svg');
-const homeLogic = readFileSync('./navbar-app/browser-app.js');
-
-const server = http.createServer((req, res) => {
-    // req = request object (req message from user)
-    // res = response object (what we send back to user)
-    const url = req.url;
-    console.log(url);
-
-    // home page
-    if (url === '/') {
-        res.writeHead(200, {'content-type': 'text/html'})
-        res.write(homePage)
-    }
-    // about page
-    else if (url === '/about') {
-        res.writeHead(200, {'content-type': 'text/html'})
-        res.write('<h1>about page<h1>')
-    }
-    // styles
-    else if (url === '/styles.css') {
-        res.writeHead(200, {'content-type': 'text/css'})
-        res.write(homeStyles)
-    }
-    // image/logo
-    else if (url === '/logo.svg') {
-        res.writeHead(200, {'content-type': 'image/svg+xml'})
-        res.write(homeImage)
-    }
-    // logic
-    else if (url === '/browser-app.js') {
-        res.writeHead(200, {'content-type': 'text/javascript'})
-        res.write(homeLogic)
-    }
-    // 404 error    
-    else {
-        res.writeHead(404, {'content-type': 'text/html'})
-        res.write('<h1>ruh roh<h1>')
-    }
-
-    // we ALWAYS need res.end to terminate the response
-    res.end();
+// user performs get request on /
+app.get('/', (req, res) => {
+    res.status(200).send('Home Page');
 })
 
-server.listen(5000);
+app.get('/about', (req, res) => {
+    res.status(200).send('About Page')
+})
+
+// user performs ANY request type on *
+app.all('*', (req, res) => {
+    res.status(404).send('<h1>resource not found</h1>')
+})
+
+app.listen(5000, () => {
+    console.log('server is listening on port 5000...')
+})
+
+
+// app.get
+// app.post
+// app.put
+// app.delete
+// app.all
+// app.use
+// app.listen
