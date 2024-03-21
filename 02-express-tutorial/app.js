@@ -1,22 +1,52 @@
 const express = require('express')
-const path = require('path');
 const app = express();
+const { products, people } = require('./data')
 
-// setup static and middleware
-// = automatically create url checkers for all the files in the public folder
-// these are assets that the server doesn't change ever
-// index.html is default root /
-app.use(express.static('./public'))
+app.get('/', (req, res) => {
+    // send response w param type JSON object
+    res.send('<h1>Home Page</h1><a href="/api/products">products</a>')
+})
 
-// app.get('/', (req, res) => {
-//     res.sendFile(path.resolve(__dirname, './navbar-app/index.html'))
-//     // .join works here too 
-// })
+app.get('/api/products', (req, res) => {
+    const newProducts = products.map((product) => {
+        const { id, name, image } = product;
+        return { id, name, image }
+    })
+    res.json(newProducts);
+})
 
-app.all('*', (req, res) => {
-    res.status(404).send('resource not found')
+app.get('/api/products/:productID', (req, res) => {
+    const { productID } = req.params;
+
+    const singleProduct = products.find(
+        (product) => product.id === Number(productID)
+    )
+    if (!singleProduct) {
+        return res.status(404).send('Product does not exist');
+    }
+    res.json(singleProduct);
+})
+
+app.get('/api/v1/query', (req, res) => {
+    console.log(req.query);
+    const { search, limit } = req.query;
+    let sortedProducts = [...products];
+    if (search) {
+        sortedProducts = sortedProducts.filter((product) => {
+            return product.name.startsWith(search)
+        })
+    }
+    if (limit) {
+        sortedProducts = sortedProducts.slice(0, Number(limit))
+    }
+    if (sortedProducts.length < 1) {
+        // dont send 404 bc resource and url exists. 
+        return res.status(200).json({success:true, data: sortedProducts})
+    }
+    // you cant send 2 responses to the same request
+    res.status(200).json(sortedProducts)
 })
 
 app.listen(5000, () => {
-    console.log('Server is listening on port 5000...')
+    console.log('Server is listening on port 5000....')
 })
